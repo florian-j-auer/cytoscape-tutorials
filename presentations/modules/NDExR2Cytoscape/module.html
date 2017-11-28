@@ -23,27 +23,42 @@
 </style>
 <section>
 	<h1>NDExR2Cytoscape</h1>
-	<a href="modules/NDExR2Cytoscape/#/"><ribbon>Who am I?</ribbon></a>
+	<a href="modules/NDExR2Cytoscape/#/me"><ribbon>Who am I?</ribbon></a>
 	<a href="modules/NDExR2Cytoscape/#/NDEx"><ribbon>What is NDEx..</ribbon></a>
 	<a href="modules/NDExR2Cytoscape/#/NDExR" class="inactive"><ribbon>..and NDExR</ribbon></a>
-	<a href="modules/NDExR2Cytoscape/#/column"><ribbon>Fancy columns</ribbon></a>
-	<a href="modules/NDExR2Cytoscape/#/end"><ribbon>Heavy animations</ribbon></a>
+	<a href="modules/NDExR2Cytoscape/#/column"><ribbon>An example</ribbon></a>
+</section>
+<section id="me">
+	<h1>Who am I?</h1>
+	<h2>Florian Auer</h2>
+	<p>Since 04/2016 PhD student at the Department of Medical Statistics, AG Statistical Bioinformatics, University Medical Center Göttingen
+		<blockquote>"A knowledge base for generating patient-specific pathways for individualized treatment decisions in clinical applications"</blockquote>
+	</p>
+	<h3>Research interests</h3>
+	<ul>
+		<li>Pathway analysis</li>
+		<li>Multi-omics integration</li>
+		<li>Machine Learning</li>
+		<li>Scientific Visualization</li>
+		<li>Web technologies (<a href="https://hub.docker.com/r/flockowak/cytoscape/">Cytoscape Docker</a>)</li>
+		<li>Databases</li>
+		<li class="fragment fade-in">..and..maybe.. R</li>
+	</ul>
 </section>
 <section id="NDEx">
 	<h1>The Network Data Exchange</h1>
 	<img src="http://www.ndexbio.org/img/NDEx-horizontal-transparent.png" class="plain"/> 
-	<p>Official Website: <a href="http://www.ndexbio.org">ndexbio.org</a></p>
+	<a href="http://www.ndexbio.org">ndexbio.org</a>
 	<blockquote>"The NDEx Project provides an open-source framework where scientists and organizations can share, store, manipulate, and publish biological network knowledge."</blockquote>
 </section>
 <section id="NDExR" class="NDEx">
-	<h1>ndexr - an R package to interface with the Network Data Exchange.</h1>
-	<h5>Florian Auer, Zaynab Hammoud, Alexandr Ishkin, Dexter Pratt, Trey Ideker, Frank Kramer</h5>
+	<h1>NDExR - an R package to interface with the Network Data Exchange.</h1>
+	<h5>Auer F, Hammoud Z, Ishkin A, Pratt D, Ideker T, Kramer F</h5>
 	<a href="https://doi.org/10.1093/bioinformatics/btx683">PMID: 29087446 DOI: 10.1093/bioinformatics/btx683</a>
 	<p>a software package that allows users to programmatically connect to and interface with NDEx servers from within R</p>
-	<h2>Available on <a href="http://bioconductor.org/packages/ndexr/">Bioconductor</a> <img src="modules/NDExR2Cytoscape/bioconductor.png" class="plain" height="1em"/></h2>
-	<h2>or from <a href="https://github.com/frankkramer-lab/ndexr">GitHub</a> using <a href="http://cran.r-project.org/web/packages/devtools/index.html">devtools</a> <img src="modules/NDExR2Cytoscape/Octocat.jpg" class="plain" height="1em"/> </h2>
+	<h2>Available on <a href="http://bioconductor.org/packages/ndexr/">Bioconductor</a> <img src="modules/NDExR2Cytoscape/bioconductor.png" class="plain" height="1em"/> or from <a href="https://github.com/frankkramer-lab/ndexr">GitHub</a> using <a href="http://cran.r-project.org/web/packages/devtools/index.html">devtools</a> <img src="modules/NDExR2Cytoscape/Octocat.jpg" class="plain" height="1em"/> </h2>
 </section>
-<section id="NDExR" class="NDEx">
+<section class="NDEx">
 	<div class="column">
 		<h1>NDEx &amp; NDExR</h1>
 		<ol>
@@ -70,31 +85,39 @@
 		<img src="modules/NDExR2Cytoscape/NDExR-collaborate.png" class="plain">
 	</div>
 </section>
-
-
-<section id="image">
-	<h1>Random Number</h1>
-	<img src="https://imgs.xkcd.com/comics/random_number.png">
-	<br/>
-	<a href="https://xkcd.com/221/">https://xkcd.com/221/</a>
+<section id="example">
+	<h1><a href="http://www.ndexbio.org/#/network/24599102-6273-11e7-a03e-0ac135e8bacf">RAGE Signaling Pathway</a></h1>
+	<img src="modules/NDExR2Cytoscape/rage-ndex.png" />
+</section>
+<section >
+	<h1>Search and download networks</h1>
+	<code class="hljs r">## connect to the NDEx server
+ndexcon = ndex_connect()
+qry = "RAGE Signaling Pathway"
+## search the networks for "EGFR"
+networks <- ndex_find_networks(ndexcon, qry)
+## UUID of network
+networkId <- networks[networks$name==qry,"externalId"]
+## download the network
+network <- ndex_get_network(ndexcon, networkId)
+	</code>
 </section>
 <section>
-	<h1>..beautiful ribbons</h1>
-	<a href="modules/florian-j-auer/#/"><ribbon>Back to Start</ribbon></a>
-	<a href="modules/florian-j-auer/#/image"><ribbon>Back to the image</ribbon></a>
-	<a href="modules/florian-j-auer/#/future" class="inactive"><ribbon>Back to the Future..</ribbon></a>
-	<a href="modules/florian-j-auer/#/column"><ribbon>Fancy columns</ribbon></a>
-	<a href="modules/florian-j-auer/#/end"><ribbon>Heavy animations</ribbon></a>
+	<div class="slide-background present" style="display: block; background-image: url(&quot;https://version22.com/wp-content/uploads/2016/06/tumblr_nq336rbIT21sp8304o1_1280.gif&quot;);" data-loaded="true"></div>
+	<h1>Work in Progress 😅</h1>
+	<code class="hljs r">## convert network (RCX) to igraph
+RCXgraph <- rcx_toRCXgraph(network)
+## get it to cytoscape
+createNetworkFromIgraph(RCXgraph)
+## and do some fancy stuff
+doSomeMagic(...)</code>
+	<p>R markdown example will come soon..</p>
 </section>
-<section id="column">
-	<h1>Random Numbers Everywhere</h1>
-	<div class="column">
-		One morning, when Gregor Samsa woke from troubled dreams, he found himself transformed in his bed into a horrible vermin. He lay on his armour-like back, and if he lifted his head a little he could see his brown belly, slightly domed and divided by arches into stiff sections.
-	</div>
-	<div class="column">
-		<img src="https://imgs.xkcd.com/comics/random_number.png">
-	</div>
+<section>
+	<h1><a href="http://www.ndexbio.org/#/network/24599102-6273-11e7-a03e-0ac135e8bacf">RAGE Signaling Pathway</a></h1>
+	<img src="modules/NDExR2Cytoscape/rage-cytoscape.png" />
 </section>
 <section id="end">
-	<h1>End<span class="fragment fade-in">?</span></h1>
+	<h1>The End<span class="fragment fade-in">?</span></h1>
+	<img src="https://imgs.xkcd.com/comics/questions.png">
 </section>
