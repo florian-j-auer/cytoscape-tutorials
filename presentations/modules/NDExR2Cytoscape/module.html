@@ -22,20 +22,48 @@
  }
 </style>
 <section>
-	<h1>My First Module!</h1>
-	<ul>
-		<li>bullet list</li>
-		<li>bullet list</li>
-		<li>bullet list</li>
-		<li>bullet list</li>
-		<li>bullet list</li>
-	</ul>
+	<h1>NDExR2Cytoscape</h1>
+	<a href="modules/NDExR2Cytoscape/#/"><ribbon>Who am I?</ribbon></a>
+	<a href="modules/NDExR2Cytoscape/#/NDEx"><ribbon>What is NDEx..</ribbon></a>
+	<a href="modules/NDExR2Cytoscape/#/NDExR" class="inactive"><ribbon>..and NDExR</ribbon></a>
+	<a href="modules/NDExR2Cytoscape/#/column"><ribbon>Fancy columns</ribbon></a>
+	<a href="modules/NDExR2Cytoscape/#/end"><ribbon>Heavy animations</ribbon></a>
 </section>
 <section id="NDEx">
 	<h1>The Network Data Exchange</h1>
 	<img src="http://www.ndexbio.org/img/NDEx-horizontal-transparent.png" class="plain"/> 
+	<p>Official Website: <a href="http://www.ndexbio.org">ndexbio.org</a></p>
 	<blockquote>"The NDEx Project provides an open-source framework where scientists and organizations can share, store, manipulate, and publish biological network knowledge."</blockquote>
-	<p>For more see <a href="http://www.ndexbio.org">ndexbio.org</a></p>
+</section>
+<section id="NDExR" class="NDEx">
+	<h1>ndexr - an R package to interface with the Network Data Exchange.</h1>
+	<h5>Florian Auer, Zaynab Hammoud, Alexandr Ishkin, Dexter Pratt, Trey Ideker, Frank Kramer</h5>
+	<a href="https://doi.org/10.1093/bioinformatics/btx683">PMID: 29087446 DOI: 10.1093/bioinformatics/btx683</a>
+	<p>a software package that allows users to programmatically connect to and interface with NDEx servers from within R</p>
+	<p>
+		<div class="column">
+			Available on <a href="http://bioconductor.org/packages/ndexr/">Bioconductor</a>:
+			<code>source("https://bioconductor.org/biocLite.R")
+				biocLite("ndexr")
+				library(ndexr)
+			</code>
+		</div>
+		<div class="column">
+			<img src="modules/NDExR2Cytoscape/bioconductor.png" class="plain"/> 
+		</div>
+	</p>
+	<p>
+		<div class="column">
+			Install from <a href="https://github.com/frankkramer-lab/ndexr">GitHub</a> using <a href="http://cran.r-project.org/web/packages/devtools/index.html">devtools</a>:
+			<code>require(devtools)
+				install_github("frankkramer-lab/ndexr")
+				library(ndexr)
+			</code>
+		</div>
+		<div class="column">
+			<img src="modules/NDExR2Cytoscape/Octocat.jpg" class="plain"/> 
+		</div>
+	</p>
 </section>
 <section id="NDExR" class="NDEx">
 	<div class="column">
