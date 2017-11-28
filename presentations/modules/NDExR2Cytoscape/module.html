@@ -1,8 +1,9 @@
 <style>
-.reveal section.NDEx img { background:none; border:none; box-shadow:none; }
-
 .NDEx ol {
    list-style: none;
+}
+ol[start="5"] {
+   counter-reset: lis 4;
 }
 .NDEx li {
    counter-increment: item;
@@ -31,8 +32,8 @@
 	</ul>
 </section>
 <section id="NDEx">
-	<img src="http://www.ndexbio.org/img/NDEx-horizontal-transparent.png" /> 
 	<h1>The Network Data Exchange</h1>
+	<img src="http://www.ndexbio.org/img/NDEx-horizontal-transparent.png" class="plain"/> 
 	<blockquote>"The NDEx Project provides an open-source framework where scientists and organizations can share, store, manipulate, and publish biological network knowledge."</blockquote>
 	<p>For more see <a href="http://www.ndexbio.org">ndexbio.org</a></p>
 </section>
@@ -47,7 +48,7 @@
 		</ol>
 	</div>
 	<div class="column">
-		<img src="modules/NDExR2Cytoscape/NDExR.png">
+		<img src="modules/NDExR2Cytoscape/NDExR.png" class="plain">
 	</div>
 </section>
 <section class="NDEx">
@@ -60,7 +61,7 @@
 		</ol>
 	</div>
 	<div class="column">
-		<img src="modules/NDExR2Cytoscape/NDExR-collaborate.png">
+		<img src="modules/NDExR2Cytoscape/NDExR-collaborate.png" class="plain">
 	</div>
 </section>
 
