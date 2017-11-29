@@ -92,25 +92,30 @@
 	<pre><code class="hljs r" data-trim contenteditable>
 ## connect to the NDEx server
 ndexcon = ndex_connect()
-qry = "RAGE Signaling Pathway"
-## search the networks for "EGFR"
-networks <- ndex_find_networks(ndexcon, qry)
-## UUID of network
-networkId <- networks[networks$name==qry,"externalId"]
+
+## search the networks
+query = "RAGE Signaling Pathway"
+networks <- ndex_find_networks(ndexcon, query)
+
+## UUID of network with name matching the query
+networkId <- networks[networks$name==query,"externalId"]
+
 ## download the network
 network <- ndex_get_network(ndexcon, networkId)
 	</code></pre>
 </section>
 <section data-background="https://version22.com/wp-content/uploads/2016/06/tumblr_nq336rbIT21sp8304o1_1280.gif">
 	<h1>Work in Progress 😅</h1>
-	<code class="hljs r" data-trim contenteditable>
+	<pre><code class="hljs r" data-trim contenteditable>
 ## convert network (RCX) to igraph
 RCXgraph <- rcx_toRCXgraph(network)
+
 ## get it to cytoscape
 createNetworkFromIgraph(RCXgraph)
+
 ## and do some fancy stuff
-doSomeMagic(...)</code>
-	<p>R markdown example will come soon..</p>
+doSomeMagic(...)</code></pre>
+	<h3>Interactive R markdown example will come soon..</h3>
 </section>
 <section>
 	<h1><a href="http://www.ndexbio.org/#/network/24599102-6273-11e7-a03e-0ac135e8bacf">RAGE Signaling Pathway</a></h1>
