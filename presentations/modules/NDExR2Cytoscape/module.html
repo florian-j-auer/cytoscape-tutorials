@@ -109,10 +109,8 @@ ndexcon = ndex_connect()
 query = "RAGE Signaling Pathway"
 networks <- ndex_find_networks(ndexcon, query)
 
-## UUID of network with name matching the query
+## download network with name matching the query
 networkId <- networks[networks$name==query,"externalId"]
-
-## download the network
 network <- ndex_get_network(ndexcon, networkId)
 	</code></pre>
 </section>
