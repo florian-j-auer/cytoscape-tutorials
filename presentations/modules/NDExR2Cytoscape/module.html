@@ -31,10 +31,8 @@
 <section id="me">
 	<h1>Who am I?</h1>
 	<h2>Florian Auer</h2>
-	<p>Since 04/2016 PhD student at the Department of Medical Statistics, AG Statistical Bioinformatics, University Medical Center Göttingen
-		<blockquote>"A knowledge base for generating patient-specific pathways for individualized treatment decisions in clinical applications"</blockquote>
-	</p>
-	<h3>Research interests</h3>
+	<p>Since 04/2016 PhD student at the Department of Medical Statistics, WG Statistical Bioinformatics, University Medical Center Göttingen</p>
+	<h4>Research interests</h4>
 	<ul>
 		<li>Pathway analysis</li>
 		<li>Multi-omics integration</li>
@@ -91,7 +89,8 @@
 </section>
 <section >
 	<h1>Search and download networks</h1>
-	<code class="hljs r">## connect to the NDEx server
+	<code class="hljs r" data-trim contenteditable>
+## connect to the NDEx server
 ndexcon = ndex_connect()
 qry = "RAGE Signaling Pathway"
 ## search the networks for "EGFR"
@@ -102,10 +101,10 @@ networkId <- networks[networks$name==qry,"externalId"]
 network <- ndex_get_network(ndexcon, networkId)
 	</code>
 </section>
-<section>
-	<div class="slide-background present" style="display: block; background-image: url(&quot;https://version22.com/wp-content/uploads/2016/06/tumblr_nq336rbIT21sp8304o1_1280.gif&quot;);" data-loaded="true"></div>
+<section data-background="https://version22.com/wp-content/uploads/2016/06/tumblr_nq336rbIT21sp8304o1_1280.gif">
 	<h1>Work in Progress 😅</h1>
-	<code class="hljs r">## convert network (RCX) to igraph
+	<code class="hljs r" data-trim contenteditable>
+## convert network (RCX) to igraph
 RCXgraph <- rcx_toRCXgraph(network)
 ## get it to cytoscape
 createNetworkFromIgraph(RCXgraph)
