@@ -1,0 +1,341 @@
+---
+title: 'NDExR and Cytoscape: Interactive and automated visualization of biological
+  networks using R'
+author: "Florian Auer"
+date: "1 2 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# NDExR and Cytoscape: Interactive and automated visualization of biological networks using R
+*Florian Auer, Frank Kramer, Tim Beißbarth*
+**University Medical Center Göttingen**
+*Abstract for a Talk at the Workshop on Computational Models in Biology and Medicine 2018 in Regensburg*
+
+Network models form a simple and flexible way of representing diverse associations within complex systems, and its applications are well-established in a wide range of fields in biology. Within a common bioinformatics workflow data integration, network analysis and visualization accompany each other, and comprise fundamental challenges of combining various tools. Implementation of fully automated pipelines enhances the intricacy of such tasks furthermore.
+Using standard technologies, we demonstrate a course from data acquisition to the finished visualization, and options to achieve the individual sub tasks. Thereby the network data exchange (NDEx) platform and the Cytoscape project, and appendant R packages, form the core components.
+We use our R package ndexr to retrieve networks from the public NDEx platform, and also to store the results for later collaboration and publication. Cytoscape is one of the most popular open-source software tools for the visual exploration of biomedical networks. Beside the graphical interface, the latest release offers a RESTful interface and R packages providing access to it. 
+Along an exemplary bioinformatics workflow, we demonstrate how the single steps can be performed not only interactively, but also in a fully automated manner. Each step can be done using Cytoscape or R, or a combination of both: Controlling Cytoscape remotely from within R. Starting at an interactive analysis we move towards automation, illustrating the interchangeability and flexibility of the different approaches.
+
+# Setup
+Install and load the necessary libraries
+```{r checkLibraries}
+## libraries from the (automation) cytoscape-tutorilal
+### Install libs and utils 
+if(!("pacman" %in% installed.packages())) install.packages("pacman")
+library(pacman)
+p_load(RJSONIO,igraph,httr,stringr,XML,RColorBrewer,devtools)
+
+# CyREST helper functions
+install_github('cytoscape/cytoscape-automation/for-scripters/R/r2cytoscape')
+library(r2cytoscape)
+
+#### Test successful installations 
+ip = installed.packages()
+if("RJSONIO" %in% ip) print("Success: the RJSONIO lib is installed") else print("Warning: RJSONIO lib is not installed. Please install this lib before proceeding.")
+if("igraph" %in% ip) print("Success: the igraph lib is installed") else print("Warning: igraph lib is not installed. Please install this lib before proceeding.")
+if("httr" %in% ip) print("Success: the httr lib is installed") else print("Warning: httr lib is not installed. Please install this lib before proceeding.")
+if("stringr" %in% ip) print("Success: the stringr lib is installed") else print("Warning: stringr lib is not installed. Please install this lib before proceeding.")
+if("XML" %in% ip) print("Success: the XML lib is installed") else print("Warning: XML lib is not installed. Please install this lib before proceeding.")
+if("RColorBrewer" %in% ip) print("Success: the RColorBrewer lib is installed") else print("Warning: RColorBrewer lib is not installed. Please install this lib before proceeding.")
+if("devtools" %in% ip) print("Success: the devtools lib is installed") else print("Warning: devtools lib is not installed. Please install this lib before proceeding.")
+if(exists('command2query',mode='function')) print("Success: r2cytoscape is installed") else print("Warning: r2cytoscape is not installed. Please source this script before proceeding.")
+
+
+## install and load NDExR
+if(!"ndexr" %in% installed.packages()){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("ndexr")
+}
+library(ndexr)
+
+## install and load visNetwork for HTML graph visualization
+if(!"visNetwork" %in% installed.packages()){
+  install.packages("visNetwork")
+}
+library(visNetwork)
+```
+
+```{r ndexFindNetworks}
+library(ndexr)
+ndexcon = ndex_connect()
+networks <- ndex_find_networks(ndexcon, accountName = "nci-pid", searchString = "PI3K Akt signaling", size = 5)
+print(networks[,c("name","externalId","nodeCount","edgeCount")])
+```
+
+```{r ndexGetNetwork}
+networkId = networks$externalId[1]
+network = ndex_get_network(ndexcon, networkId)
+print(network)
+```
+
+# Get some Gene Regualtion data!
+## The PI3K/AKT signaling pathway: Associations of miRNAs with dysregulated gene expression in colorectal cancer.
+Slattery ML, Mullany LE, Sakoda LC, Wolff RK, Stevens JR, Samowitz WS, Herrick JS.
+[Mol Carcinog.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5760356/#) 2018 Feb;57(2):243-261. 
+doi: [10.1002/mc.22752](https://dx.doi.org/10.1002%2Fmc.22752). Epub 2017 Nov 19.
+
+>"The Kyoto Encyclopedia of Genes and Genomes (KEGG) [...] pathway map for PI3K‐AKT‐signaling was used to identify genes associated with this pathway. "
+>"Of the 304 genes evaluated, 254 (83.6%) were statistically significantly dysregulated after adjustment for multiple comparisons."
+
+```{r genes}
+geneRegulation = read.csv("PMC5760356.csv")
+## remove dot in column names (causes some error in cytoscape)
+colnames(geneRegulation) = gsub(".","", colnames(geneRegulation),fixed = T)
+## eliminate the whitespaces in gene symbols
+geneRegulation$Gene = gsub(" ","", as.character(geneRegulation$Gene), fixed = T)
+## filter for significant genes
+geneRegulation = geneRegulation[geneRegulation$AdjustedPValue<=0.05,]
+head(geneRegulation, 5)
+```
+
+```{r mappedGenes}
+included = geneRegulation$Gene[geneRegulation$Gene %in% network$nodes$n]
+print(included)
+```
+
+There would be a more sophisticated mapping possible, but this is just for illustration purposes!
+For example: "B2CL1"
+```{r b2cl1}
+## getting the node id of "B2CL1"
+b2cl1Id = network$nodes[network$nodes$n=="B2CL1","@id"]
+## the nodeAttributes aspect of the rcx network contains the links to uniprot
+b2cl1Attributes = network$nodeAttributes[network$nodeAttributes$po==b2cl1Id,"v"]
+print(b2cl1Attributes)
+```
+The PID network has the member "B2CL1" which cannot be found in the gene list, but has links to the Uniprot entry [Q07817](http://www.uniprot.org/uniprot/Q07817). 
+
+>Primary (citable) accession number: Q07817
+>Secondary accession number(s): E1P5L6, Q5CZ89, Q5TE65, Q92976
+
+The gene name of this enty, **Bcl-2-like protein 1**, is "BCL2L1", which can be found in the gene list.
+```{r bcl2l1Regulation}
+bcl2l1Regulation = geneRegulation[geneRegulation$Gene=="BCL2L1",]
+print(bcl2l1Regulation)
+```
+Using the provided links with the bioconductor package [UniProt.ws](http://bioconductor.org/packages/UniProt.ws/) a higher coverage might be achieved, but this goes beyond the scope of this presentation.
+A possible ussage might look like this:
+```{r uniprot, eval=FALSE}
+source("https://bioconductor.org/biocLite.R")
+biocLite("UniProt.ws")
+library("UniProt.ws")
+## homo sapiens
+up <- UniProt.ws(taxId=9606)
+## get genes for uniprot ids
+uniprotValues = network$nodeAttributes[network$nodeAttributes$n=="alias",c("po","v")]
+## get the uniprot ids..
+## ..and do something like this:
+key = "Q07817"
+columns = c("UNIPROTKB","GENES")
+keytype = "UNIPROTKB"
+uniprotGenes = select(up, key, columns, keytype)
+```
+
+# Preparation of networks
+The network provides more than one type of edge:
+```{r neighborEdges}
+unique(network$edges$i)
+```
+In particular, the "neighbor-of" edges are unnecessary, therefore they will be removed for further steps. Hence the edgeAttributes property referes to the edge id, it is necessary to remove the affected edgeAttribute entries:
+
+```{r preparation}
+removedEdges = network$edges[network$edges$i=="neighbor-of", "@id"]
+network$edges = network$edges[network$edges$i!="neighbor-of",]
+network$edgeAttributes = network$edgeAttributes[!network$edgeAttributes$po %in% removedEdges,]
+```
+
+# Using igraph
+very simple example
+```{r igraphSimple}
+## using ndexr to convert an RCX to an igraph object
+graph = rcx_toNGraph(network) 
+## assigne the vertex names from the rcx node names
+V(graph)$name = V(graph)$n
+## visulize the igraph!
+plot(graph)
+```
+
+a little bit more advanced
+
+```{r igraph}
+## using ndexr to convert an RCX to an igraph object
+graph = rcx_toNGraph(network) 
+## assigne the vertex names from the rcx node names
+V(graph)$name = V(graph)$n
+## map gene expression to vertices
+nodeSize = merge(data.frame(name=V(graph)$name,stringsAsFactors = F),
+                 geneRegulation[,c("Gene", "FoldChange")], 
+                 by.x = "name", by.y = "Gene", all.x = T)
+## precalculation for the color
+nodeSize$color = ifelse(is.na(nodeSize$FoldChange),
+                         0, 
+                         as.integer((nodeSize$FoldChange^3)*120))
+## assign color to vertices
+V(graph)$color = ifelse(is.na(nodeSize$FoldChange),
+                         "lightgreen", 
+                         rgb(nodeSize$color,0,255-nodeSize$color, maxColorValue = 255))
+## adjust edge weight for force directed layout
+E(graph)$weight = ifelse(E(graph)$i=="in-complex-with",1,2)
+## visulize the igraph!
+plot(graph, 
+     vertex.size = ifelse(is.na(nodeSize$FoldChange),12, as.integer(nodeSize$FoldChange^3*11)),
+     vertex.label.cex = .7,
+     edge.arrow.size=.4)
+```
+
+
+```{r cyrest}
+nodes = data.frame(id=network$nodes$'@id', 
+                   name=network$nodes$n, 
+                   group=ifelse(network$nodes$n %in% geneRegulation$Gene,"changed","normal"),
+                   stringsAsFactors = F)
+edges = data.frame(source=network$edges$s, 
+                   target=network$edges$t, 
+                   id=network$edges$'@id', 
+                   interaction=network$edges$i, 
+                   stringsAsFactors = F)
+## send the network to Cytoscape
+network.suid <- createNetwork(nodes, edges, "FancyNetwork", "MyCollection")
+## add the gene regulation as table
+loadTableData(geneRegulation, 
+              data.key.column = "Gene", 
+              table = "node",
+              table.key.column = "name")
+
+## do some layout
+style.name = "FancyStyle"
+## default layout
+defaults <- list(NODE_SHAPE="ROUND_RECTANGLE",
+                 NODE_FILL_COLOR="lightgreen",
+                 NODE_SIZE=30,
+                 NODE_LABEL_FONT_SIZE=8,
+                 EDGE_WIDTH=4,
+                 EDGE_TARGET_ARROW_UNSELECTED_PAINT="#404040",
+                 EDGE_TARGET_ARROW_SHAPE="delta")
+## node-table:name is used as default node label
+nodeLabels <- mapVisualProperty('node label','name','p')
+## node shape for group "changed" is set to ellipse
+nodeShape <- mapVisualProperty('node shape','group','d', c("changed"), c('ellipse'))
+## node size and color, and label size is based on fold change
+nodeSize <- mapVisualProperty('node size','FoldChange','c', c(0.7,1.5), c(40,100))
+nodeFills <- mapVisualProperty('node fill color','FoldChange','c', c(0.7,1.0,1.5), c('#FF0000','#888888','#0000FF'))
+nodeLabelFontSize <- mapVisualProperty('node label font size','FoldChange','c', c(0.7,1.5), c(11,29))
+
+## edge arrow and color for "in-complex-with"
+edgeArrowShape <- mapVisualProperty('edge target arrow shape','interaction','d', c("in-complex-with"), c('none'))
+edgeColor <- mapVisualProperty('edge color','interaction','d', c("in-complex-with"), c('#FF4949'))
+
+## create style with node attribute-fill mappings and some defaults
+createStyle(style.name, defaults, list(nodeLabels, 
+                                       nodeSize, 
+                                       nodeFills, 
+                                       nodeLabelFontSize, 
+                                       nodeShape, 
+                                       edgeArrowShape, 
+                                       edgeColor))
+## apply the stype to the network 
+applyStyle(style.name)
+
+## export as png
+exportImage("cytoscape.png", "png")
+```
+
+![](/home/rstudio/cytoscape.png)
+
+```{r cyrest-igraph}
+nodes = data.frame(id=network$nodes$'@id', 
+                   name=network$nodes$n, 
+                   group=ifelse(network$nodes$n %in% geneRegulation$Gene,"changed","normal"),
+                   stringsAsFactors = F)
+edges = data.frame(source=network$edges$s, 
+                   target=network$edges$t, 
+                   id=network$edges$'@id', 
+                   interaction=network$edges$i, 
+                   stringsAsFactors = F)
+## send the network to Cytoscape
+network.suid <- createNetwork(nodes, edges, "FancyNetwork", "MyCollection")
+## add the gene regulation as table
+loadTableData(geneRegulation, 
+              data.key.column = "Gene", 
+              table = "node",
+              table.key.column = "name")
+
+
+createNetworkFromRCX <- function(rcx, network.name = "MyNetwork", collection.name = "myNetworkCollection", base.url = "http://localhost:1234/v1", ...){
+  
+}
+
+tmp = network
+nodeA = tmp$nodeAttributes
+unique(nodeA[,c("n","d")])
+tmp$nodeAttributes = data.frame(po=unique(tmp$nodeAttributes$po), stringsAsFactors = F)
+tmpType =nodeA[nodeA$n=="gene count",c("po","v")]
+tmpType$v = unlist(tmpType$v)
+tmp$nodeAttributes = merge(tmp$nodeAttributes, tmpType, all = T,by.x="po", by.y = "po")
+head(tmp$nodeAttributes)
+tmp$nodeAttributes = merge(tmp$nodeAttributes, nodeA[nodeA$n=="genes",c("po","v")],all = T,by.x="po", by.y = "po")
+head(tmp$nodeAttributes)
+tmp$nodeAttributes = merge(tmp$nodeAttributes, nodeA[nodeA$n=="ndex:internalLink",c("po","v")],all = T,by.x="po", by.y = "po")
+head(tmp$nodeAttributes)
+tmp$nodeAttributes = merge(tmp$nodeAttributes, nodeA[nodeA$n=="ndex:externalLink",c("po","v")],all = T,by.x="po", by.y = "po")
+head(tmp$nodeAttributes)
+tmp$nodeAttributes = merge(tmp$nodeAttributes, nodeA[nodeA$n=="width",c("po","v")],all = T,by.x="po", by.y = "po")
+head(tmp$nodeAttributes)
+tmp$nodeAttributes = merge(tmp$nodeAttributes, nodeA[nodeA$n=="type",c("po","v")],all = T,by.x="po", by.y = "po")
+head(tmp$nodeAttributes)
+names(tmp$nodeAttributes)
+tmp$nodeAttributes = NULL
+tmp$edgeAttributes = NULL
+createNetworkFromIgraph(rcx_toRCXgraph(tmp))
+
+
+for()
+
+```
+
+
+
+# html visualization
+```{r html}
+## get the nodes with label
+nodes <- data.frame(id = network$nodes$'@id', 
+                    label = network$nodes$n)
+## map the expression data on the nodes
+nodeSize = merge(nodes, geneRegulation[,c("Gene", "FoldChange")], 
+                 by.x = "label", by.y = "Gene", all.x = T)
+## assign size, shape, color and font (color)
+nodes$value = ifelse(is.na(nodeSize$FoldChange),20, as.integer(nodeSize$FoldChange*50))
+nodes$shape = ifelse(is.na(nodeSize$FoldChange),"box", "circle")
+nodes$font = ifelse(is.na(nodeSize$FoldChange),"14px arial black", "14px arial white")
+nodes$color = ifelse(is.na(nodeSize$FoldChange),
+                     "lightgreen", 
+                     paste0("rgba(",as.integer(nodeSize$FoldChange^3*150),",0,",as.integer(255-(nodeSize$FoldChange^4*150)),",1)"))
+
+## get edges
+## filter neighbor relations
+edgeFilter = (network$edges$i != "neighbor-of")
+edges <- data.frame(from = network$edges[edgeFilter,]$s, 
+                    to = network$edges[edgeFilter,]$t, 
+                    group = network$edges[edgeFilter,]$i)
+## assigne color, length and arrow heads
+edges$color = ifelse(edges$group=="in-complex-with","red", "black")
+edges$length = ifelse(edges$group=="in-complex-with",10 , 50)
+edges$arrows = ifelse(edges$group=="in-complex-with","" , "to")
+
+## visualize!
+visNetwork(nodes, edges) 
+```
+
+
+
+
+
+
+
+
+

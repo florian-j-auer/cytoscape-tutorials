@@ -1,0 +1,23 @@
+---
+title: "0-Setup-Packages"
+author: "Florian Auer"
+date: "1 2 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Install required R packages
+NDExR provides a connetion to the [public NDEx server](http://www.ndexbio.org) and private installations
+RCy3 is needed for the connection to Cytoscape
+```
+source("https://bioconductor.org/biocLite.R")
+biocLite(c("RCy3","ndexr"))
+
+install.packages("httr")
+install.packages("readr")
+install.packages("XML2")
+```
+
